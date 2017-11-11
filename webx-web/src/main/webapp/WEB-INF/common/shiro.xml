@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xsi:schemaLocation="
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+	http://www.springframework.org/schema/cache
+    http://www.springframework.org/schema/cache/spring-cache.xsd
+	">
+
+    <bean id="myRealm" class="webx.app1.module.action.MyRealm" />
+
+    <!-- 配置sessionIdCookie -->
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <!-- 配置Cookie各类信息 -->
+        <property name="maxAge" value="1800" />
+        <property name="httpOnly" value="false" />
+        <property name="name" value="cookie" />
+    </bean>
+    <!-- 配置缓存管理器 -->
+    <!--<bean id="cacheManager" name="cacheManager2" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+        &lt;!&ndash; 配置缓存信息 &ndash;&gt;
+        <property name="cacheManagerConfigFile" value="classpath:cacheManagerConfigFile.xml" />
+    </bean>-->
+    <!-- 配置生成会话id的生成器 -->
+    <bean id="sessionIdGenerator" class="org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator" />
+
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <property name="globalSessionTimeout" value="1800000" />
+        <property name="deleteInvalidSessions" value="false" />
+        <property name="sessionIdCookie" ref="sessionIdCookie" />
+        <!--<property name="cacheManager" ref="cacheManager" />-->
+        <property name="sessionValidationScheduler" ref="sessionValidationScheduler" />
+    </bean>
+
+    <!--配置验证器-->
+    <bean id="authenticator" class="org.apache.shiro.authc.pam.ModularRealmAuthenticator">
+        <property name="authenticationStrategy" ref="authcStrategy" />
+        <property name="realms">
+            <list>
+                <ref bean="myRealm" />
+            </list>
+        </property>
+    </bean>
+    <!-- 配置策略 -->
+    <bean id="authcStrategy" class="org.apache.shiro.authc.pam.AllSuccessfulStrategy" />
+    <!-- 配置会话验证调度器 -->
+    <bean id="sessionValidationScheduler" class="org.apache.shiro.session.mgt.ExecutorServiceSessionValidationScheduler">
+        <property name="interval" value="36000000" />
+        <property name="sessionManager" ref="sessionManager" />
+    </bean>
+
+    <!-- 配置安全管理器 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <!-- Single realm app.  If you have multiple realms, use the 'realms' property instead. -->
+        <property name="realms">
+            <list>
+                <ref bean="myRealm" />
+            </list>
+        </property>
+        <!-- 将验证器配给安全管理器 -->
+        <property name="authenticator" ref="authenticator" />
+        <!-- 将会话管理器配给安全管理器 -->
+        <property name="sessionManager" ref="sessionManager" />
+        <!-- 将缓存管理器配给安全管理器 -->
+        <!--<property name="cacheManager" ref="cacheManager" />-->
+        <!-- By default the servlet container sessions will be used.  Uncomment this line
+             to use shiro's native sessions (see the JavaDoc for more): -->
+        <!-- <property name="sessionMode" value="native"/> -->
+    </bean>
+
+
+   <!-- <bean id="aaa" class="shiroWeb.filter.aaa" />-->
+
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!-- shiro的核心安全接口 -->
+        <property name="securityManager" ref="securityManager"/>
+        <!-- override these for application-specific URLs if you like: -->
+        <!-- 身份认证失败，则跳转到登陆页面的配置 -->
+        <property name="loginUrl" value="/form/login.vm"/>
+        <!-- 权限认证失败，则跳转到指定页面的配置 -->
+        <property name="unauthorizedUrl" value="/index.vm"/>
+        <!-- The 'filters' property is not necessary since any declared javax.servlet.Filter bean  -->
+        <!-- defined will be automatically acquired and available via its beanName in chain        -->
+        <!-- definitions, but you can perform instance overrides or name aliases here if you like: -->
+        <!-- <property name="filters">
+            <util:map>
+                <entry key="anAlias" value-ref="someFilter"/>
+            </util:map>
+        </property> -->
+        <!-- shiro连接约束配置，即过滤链的定义 -->
+        <property name="filterChainDefinitions">
+            <value>
+                /login=anon
+                /admin*=authc
+                /admin/aaa.do=roles[admin]
+                /admin*=perms["user:create"]
+            </value>
+        </property>
+    </bean>
+
+    <!-- 保证实现了shiro内部lifecycle函数的bean执行 -->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+    <!-- 开启shiro注解 -->
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" depends-on="lifecycleBeanPostProcessor"/>
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+        <property name="securityManager" ref="securityManager"/>
+    </bean>
+
+</beans>

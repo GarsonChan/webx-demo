@@ -1,0 +1,26 @@
+$page.setTitle("Login")
+
+<form action="$app1Link.setTarget("form/login")" method="post">
+    $csrfToken.hiddenField
+    <input type="hidden" name="action" value="login _action"/>
+
+    #set($group = $form.login.defaultInstance)
+
+    <p>Hello, enter your name and your password to login</p>
+
+    #if(!$group.userName.valid)
+        <p>$group.userName.message</p>
+    #end
+    #if(!$group.password.valid)
+        <p>$group.password.message</p>
+    #end
+
+    <p>
+        <input type="text" name="$group.userName.key" value="$!group.userName.value" />
+        <input type="text" name="$group.password.key" value="$!group.password.value" />
+        <input type="submit" name="event_submit_do_login"/>
+    </p>
+
+</form>
+
+
