@@ -15,6 +15,10 @@
     <services:uris>
         <uris:uri id="server" requestAware="true" />
 
+        <!--
+            表示配置了$app1Link为/路径
+            nav.redirectTo("app1Link").withTarget("hello").withParameter("name", name)中代表重定向到:（域名:端口号/hello）
+        -->
         <uris:turbine-uri id="app1Link" exposed="true" extends="server">
             <componentPath>/</componentPath>
         </uris:turbine-uri>

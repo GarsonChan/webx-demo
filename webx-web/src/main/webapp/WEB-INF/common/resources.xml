@@ -5,16 +5,18 @@
              xmlns:services="http://www.alibaba.com/schema/services"
              xmlns:res-filters="http://www.alibaba.com/schema/services/resource-loading/filters"
              xmlns:res-loaders="http://www.alibaba.com/schema/services/resource-loading/loaders"
-             xsi:schemaLocation="
-                 http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
+             xmlns:mvc="http://www.springframework.org/schema/mvc"
+             xsi:schemaLocation="http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
                  http://www.alibaba.com/schema/services/resource-loading/filters http://localhost:8080/schema/services-resource-loading-filters.xsd
                  http://www.alibaba.com/schema/services/resource-loading/loaders http://localhost:8080/schema/services-resource-loading-loaders.xsd
-                 http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
-             ">
+                 http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--加载各类资源，包括web应用下的、classpath下的等-->
 
     <services:resource-loading>
 
-        <resource-alias pattern="/" name="/webroot" />
+        <!--重命名资源，取消资源名称和环境的关联性-->
+        <resource-alias pattern="/" name="/webroot" /><!--将name资源地址重命名为pattern-->
 
         <!-- 子模块模板目录：/*/templates -->
         <!-- 全局模板目录：  /*/templates/global -->
@@ -24,9 +26,12 @@
         <resource-alias pattern="/conf" name="/webroot/WEB-INF" />
 
         <!-- 内部资源 -->
-        <resource pattern="/webroot" internal="true">
-            <res-loaders:webapp-loader />
+        <!--读取webx-app1.xml-->
+        <resource pattern="/webroot" internal="true"><!--定义新资源：pattern资源名以/webroot为前缀internal设为true可以
+        强制用户转向新的资源名称，默认为false，即新旧两种名称都能用-->
+            <res-loaders:webapp-loader /><!--配置WebappResource,从当前web应用中装载资源-->
         </resource>
+
         <resource pattern="/classpath" internal="true">
             <res-loaders:classpath-loader />
         </resource>

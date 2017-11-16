@@ -12,6 +12,8 @@
                  http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
              ">
 
+    <!--定制请求处理过程的每一步-->
+
     <services:pipeline>
 
         <!-- 初始化turbine rundata，并在pipelineContext中设置可能会用到的对象(如rundata、utils)，以便valve取得。 -->
@@ -26,19 +28,31 @@
         <!-- 检查csrf token，防止csrf攻击和重复提交。假如request和session中的token不匹配，则出错，或显示expired页面。 -->
         <pl-valves:checkCsrfToken />
 
+        <!--自定义valve-->
+        <pl-valves:valve class="webx.app1.module.action.pipeline.MyValve" />
+
+        <!--<pl-valves:valve class="webx.app1.module.action.pipeline.MyNestableValve" p:subPipeline-ref="subPipeline" />-->
+        <!--<beans:bean id="subPipeline" class="com.alibaba.citrus.service.pipeline.Pipeline" />-->
+
         <pl-valves:loop>
             <pl-valves:choose>
                 <when>
                     <!-- 执行带模板的screen，默认有layout。 -->
+
+                    <!--判断请求后缀名是否为null，如果是，则执行该when分支-->
                     <pl-conditions:target-extension-condition extension="null" />
+                    <!--执行action，webx中的action是用来处理表单操作的-->
                     <pl-valves:performAction />
+                    <!--执行screen中对应的类，然后在/templates/screen下找到并绘制vm模板-->
                     <pl-valves:performTemplateScreen />
+                    <!--渲染找到的vm模板-->
                     <pl-valves:renderTemplate />
                 </when>
                 <when>
                     <!-- 执行不带模板的screen，无layout。 -->
                     <pl-conditions:target-extension-condition extension="do" />
                     <pl-valves:performAction />
+                    <!--执行Screen下面的java类，不去渲染模板-->
                     <pl-valves:performScreen />
                 </when>
                 <when>

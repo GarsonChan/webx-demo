@@ -81,7 +81,7 @@
     </bean>
 
 
-   <!-- <bean id="aaa" class="shiroWeb.filter.aaa" />-->
+   <!-- <bean id="ARequestContext" class="shiroWeb.filter.ARequestContext" />-->
 
     <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
         <!-- shiro的核心安全接口 -->

@@ -12,6 +12,7 @@
              xmlns:session-idgens="http://www.alibaba.com/schema/services/request-contexts/session/idgens"
              xmlns:model-encoders="http://www.alibaba.com/schema/services/request-contexts/session/model-encoders"
              xmlns:session-stores="http://www.alibaba.com/schema/services/request-contexts/session/stores"
+             xmlns:rewrite="http://www.springframework.org/schema/c"
              xsi:schemaLocation="
                  http://www.alibaba.com/schema/services http://localhost:8080/schema/services.xsd
                  http://www.alibaba.com/schema/services/module-loader/adapters http://localhost:8080/schema/services-module-loader-adapters.xsd
@@ -31,6 +32,7 @@
     </services:property-placeholder>
 
     <beans:import resource="classpath*:service.xml"/>
+    <beans:import resource="common/shiro.xml" />
 
     <!-- 共享配置。 -->
     <beans:import resource="common/webx-component-and-root.xml" />
@@ -44,8 +46,6 @@
     <!-- URI生成。 -->
     <beans:import resource="common/uris.xml" />
 
-    <beans:import resource="common/shiro.xml" />
-
     <!-- 综合设置。 -->
     <services:webx-configuration>
         <!-- 默认将productionMode设为true，建议在jetty插件中设置-DproductionMode=false。 -->
@@ -53,18 +53,47 @@
         <components defaultComponent="app1" />
     </services:webx-configuration>
 
+    <services:upload sizeMax="5M"
+                     fileSizeMax="2M"
+                     repository="/tmp"
+                     sizeThreshold="10K"
+                     keepFormFieldInMemory="true" />
+    <!--sizeMax:Http请求的最大尺寸-->
+    <!--fileSizeMax:单个文件允许的最大尺寸-->
+    <!--repository:暂存上传文件的目录-->
+    <!--sizeThreshold:文件存在内存中的阈值，小于此值的文件存于内存中-->
+    <!--KeepFormFieldInMemory:将普通form field保持在内存中-->
+
     <!-- 设置request/response/session。 -->
-    <services:request-contexts>
-        <request-contexts:basic />
-        <request-contexts:buffered />
-        <request-contexts:lazy-commit />
-        <request-contexts:parser />
+    <services:request-contexts><!--其中service为拓展点，相当于一个接口;request-contexts为组件，既是service的拓展，又拓展了多个request context-->
+        <!--贡献，相当于接口的实现-->
+        <request-contexts:basic /><!--文档p95，拦截干预一些事件，提供基础安全特性，如过滤response headers、cookies、限制cookie的大小等-->
+        <request-contexts:buffered /><!--文档p108 缓存response的内容-->
+        <request-contexts:lazy-commit /><!--文档p112 延迟提交response，可通过LazyCommitRequestContext接口访问当前response一些状态-->
+        <request-contexts:parser><!--文档p102，解析参数，支持multipart/form-data文件上传-->
+            <filters>
+                <!--禁止文件名后缀不在列表中的文件被上传到服务器中-->
+                <uploaded-file-whitelist xmlns="http://www.alibaba.com/schema/services/request-contexts/parser/filters" extensions="jpg,gif,jpeg,png" />
+            </filters>
+        </request-contexts:parser>
+
         <request-contexts:set-locale defaultLocale="zh_CN" defaultCharset="UTF-8" />
+        <!--文档p96，设置locale区域和charset字符集编码-->
+        <!--defaultLocale:默认locale；
+            defaultCharset：默认charset；
+            inputCharsetParam：临时改变输入charset的参数名，默认为"_input_charset",即在请求url后加上该参数 -http://localhost:8080/webx？_input_charset=UTF-8->
+            outputCharsetParam:临时改变输出charset参数名；
+            paramKey:持久改变输出locale和charset的参数名，默认为“_lang”
+            sessionKey:在session中保存用户所选择的locale和charset的key，默认为“_lang”-->
         <request-contexts:session>
-            <id>
-                <cookie path="/" maxAge="0" httpOnly="true" />
+            <id cookieEnabled="true" urlEncodeEnabled="true">
+                <cookie name="MYSESSIONID" path="/" maxAge="0" httpOnly="true" />
+                <url-encode name="JSESSIONID"/>
+                <session-idgens:uuid-generator />
             </id>
+            <!--设置存储session的store-->
             <stores>
+                <!--存储session的cookie-->
                 <session-stores:cookie-store id="temporaryCookie">
                     <cookie name="tmp" />
                 </session-stores:cookie-store>
@@ -73,10 +102,20 @@
                 <match name="*" store="temporaryCookie" />
             </store-mappings>
         </request-contexts:session>
-    </services:request-contexts>
 
-    <!-- 支持上传文件。 -->
-    <services:upload sizeMax="5M" />
+        <!--<request-contexts:rewrite />--><!--重写请求的url和参数-->
+
+        <!--<request-contexts:rewrite>
+            <rule pattern="/Demo">
+                <condition  test="%{QUERY:x}" pattern="1"/>
+                &lt;!&ndash;<condition  test="%{QUERY:y}" pattern="2" flags="ornext"/>&ndash;&gt;
+            </rule>
+            <substitution uri="/">
+                <parameter key="x" value="5" />
+            </substitution>
+        </request-contexts:rewrite>-->
+
+    </services:request-contexts>
 
     <!-- 将beans暴露给模板。这里定义的tools可被所有components之间共享。 -->
     <services:pull>
