@@ -39,7 +39,7 @@ webx是一个拓展spring容器（SpringEXT）、完善请求request、response�
 
 每个schema都有一个解释器和它对应，这个解释器由服务的开发者提供，负责将符合schema定义的xml配置转换为Spring能解读的bean定义，如下图所示
 
-![](/img/spring schema.png)
+![](/img/spring-schema.png)
 
 这样将提供类名、property名称等工作交还给服务提供者，使服务的使用者可以用它所能理解的语言来装配服务，这就是Spring Schema带来的价值。
 
