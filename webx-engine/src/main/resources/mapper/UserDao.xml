@@ -4,7 +4,9 @@
 
 <mapper namespace="webx.engine.dao.UserDao">
 
-    <select id="selectByName" parameterType="String" resultMap="User">
+    <!--<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>--><!--配置mybatis二级缓存时需要加此标签-->
+
+    <select id="selectByName" parameterType="String" resultMap="User" useCache="true">
         SELECT * FROM user WHERE userName = #{userName}
     </select>
     <resultMap id="User" type="webx.po.User">

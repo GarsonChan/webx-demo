@@ -136,3 +136,11 @@ webx Turbine在webx Framework基础上实现处理页面基本流程，包括页
 
 最后，[这里](https://github.com/xiaoMzjm/webxdemo)是12级师兄的webx-demo学习路线，可以参考一下。
 
+
+
+ps：
+
+​	1、配置了redis服务器缓存以及ehcache做mybatis第二缓存（mybatis第二缓存很少用到，一般缓存的话只需要在本地缓存和服务器缓存二者之间选一就行，mybatis一二级缓存的内容可以看[这里](http://www.360doc.com/content/15/1205/07/29475794_518018352.shtml)）。
+
+​	2、此demo配置的redis缓存包括了两种：一种是没有使用`spring-data-redis`的配置(`redis.xml`)(包括redis的集群配置)，一种是使用`spring-data-redis`的spring配置(`spring-redis.xml`)，此demo采用了第二种配置，重新封装了`redisTemplate`。		2017/11/18
+

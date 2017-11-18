@@ -42,7 +42,21 @@
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis-ehcache</artifactId>
         </dependency>
-
+        <!--作为mybatis二级缓存的第三方 -->
+        <dependency>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+        </dependency>
+        <!--redis-->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+        </dependency>
+        <!--子项目-->
         <dependency>
             <groupId>webx</groupId>
             <artifactId>webx-common</artifactId>

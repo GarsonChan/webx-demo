@@ -1,10 +1,12 @@
 package webx.po;
 
+import java.io.Serializable;
+
 /**
  * Created by Garson in 22:48 2017/11/9
  * Description :
  */
-public class User {
+public class User implements Serializable {
 
 	int id;
 	String userName;

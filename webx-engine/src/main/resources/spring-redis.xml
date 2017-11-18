@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xsi:schemaLocation="
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+	http://www.springframework.org/schema/cache
+    http://www.springframework.org/schema/cache/spring-cache.xsd
+	">
+    <!--设置redis.properties-->
+    <context:property-placeholder location="classpath*:property/redis.properties" ignore-unresolvable="true"/>
+    <!--扫面springRedis包-->
+    <context:component-scan base-package="webx.engine.template.redis" />
+
+    <!--配置jedis池的信息-->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <property name="maxTotal" value="${redis.pool.maxActive}" />
+        <property name="maxIdle" value="${redis.pool.maxIdle}" />
+        <property name="minIdle" value="${redis.pool.minIdle}" />
+        <property name="maxWaitMillis" value="${redis.pool.maxWait}" />
+        <property name="testOnBorrow" value="${redis.pool.testOnBorrow}" />
+        <property name="testOnReturn" value="${redis.pool.testOnReturn}" />
+    </bean>
+    <!--配置jedis连接工厂-->
+    <bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+            p:hostName="${redis.host}" p:port="${redis.port}"
+            p:timeout="3000" p:password="${redis.password}"
+            p:poolConfig-ref="jedisPoolConfig"  p:usePool="true" />
+
+    <!--配置redis模板-->
+    <!--
+        RedisTemplate中需要声明4种serializer，默认为“JdkSerializationRedisSerializer”：
+        1) keySerializer ：对于普通K-V操作时，key采取的序列化策略
+        2) valueSerializer：value采取的序列化策略
+        3) hashKeySerializer： 在hash数据结构中，hash-key的序列化策略
+        4) hashValueSerializer：hash-value的序列化策略
+        无论如何，建议key/hashKey采用StringRedisSerializer。
+    -->
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+          p:connectionFactory-ref="jedisConnectionFactory">
+        <!--<property name="connectionFactory" ref="jedisConnectionFactory" />-->
+        <!--对序列化操作提供策略-->
+        <!--
+            JdkSerializationRedisSerializer：POJO对象的存取场景，使用JDK本身序列化机制，将pojo类通过ObjectInputStream/ObjectOutputStream进行序列化操作，
+                                            最终redis-server中将存储字节序列。是目前最常用的序列化策略。
+
+            StringRedisSerializer：Key或者value为字符串的场景，根据指定的charset对数据的字节序列编码成string，
+                                   是“new String(bytes, charset)”和“string.getBytes(charset)”的直接封装。是最轻量级和高效的策略。
+
+            JacksonJsonRedisSerializer：jackson-json工具提供了javabean与json之间的转换能力，可以将pojo实例序列化成json格式存储在redis中，
+                                        也可以将json格式的数据转换成pojo实例。因为jackson工具在序列化和反序列化时，需要明确指定Class类型，
+                                        因此此策略封装起来稍微复杂。【需要jackson-mapper-asl工具支持】
+
+            OxmSerializer： 提供了将javabean与xml之间的转换能力，目前可用的三方支持包括jaxb，apache-xmlbeans；redis存储的数据将是xml工具。
+                            不过使用此策略，编程将会有些难度，而且效率最低；不建议使用。
+        -->
+        <property name="keySerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+        </property>
+        <property name="hashKeySerializer">
+            <bean class="org.springframework.data.redis.serializer.StringRedisSerializer" />
+        </property>
+        <property name="valueSerializer">
+            <bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+        </property>
+        <property name="hashValueSerializer">
+            <bean class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />
+        </property>
+    </bean>
+
+    <!--<bean id="springRedisFactory" class="webx.engine.templatee.redis.MyRedisTemplate">
+        <property name="redisTemplate" ref="redisTemplate" />
+    </bean>-->
+
+</beans>

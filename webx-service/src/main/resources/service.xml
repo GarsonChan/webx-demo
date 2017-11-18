@@ -19,6 +19,7 @@
     http://www.springframework.org/schema/cache/spring-cache.xsd
 	">
 
+    <import resource="classpath*:spring-redis.xml" />
     <import resource="classpath*:engine.xml" />
 
     <context:component-scan base-package="webx" />

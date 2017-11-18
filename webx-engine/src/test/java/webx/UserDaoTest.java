@@ -17,6 +17,7 @@ public class UserDaoTest {
 	public void selectTest(){
 		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("engine.xml");
 		UserDao userDao = (UserDao) applicationContext.getBean("userDao");
+		for (int i = 0 ; i<3; i++)
 		System.out.println(userDao.selectByName("wang"));
 	}
 

@@ -26,6 +26,8 @@
                  http://www.springframework.org/schema/beans http://localhost:8080/schema/www.springframework.org/schema/beans/spring-beans.xsd
              ">
 
+    <!--<beans:import resource="classpath*:spring-redis.xml" />-->
+
     <!-- 支持${xxx}替换。 -->
     <services:property-placeholder>
         <property key="component">common</property>
@@ -59,7 +61,7 @@
                      sizeThreshold="10K"
                      keepFormFieldInMemory="true" />
     <!--sizeMax:Http请求的最大尺寸-->
-    <!--fileSizeMax:单个文件允许的最大尺寸-->
+    <!--fileSizeMax:单个文件允许的最大尺                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             寸-->
     <!--repository:暂存上传文件的目录-->
     <!--sizeThreshold:文件存在内存中的阈值，小于此值的文件存于内存中-->
     <!--KeepFormFieldInMemory:将普通form field保持在内存中-->
@@ -102,19 +104,6 @@
                 <match name="*" store="temporaryCookie" />
             </store-mappings>
         </request-contexts:session>
-
-        <!--<request-contexts:rewrite />--><!--重写请求的url和参数-->
-
-        <!--<request-contexts:rewrite>
-            <rule pattern="/Demo">
-                <condition  test="%{QUERY:x}" pattern="1"/>
-                &lt;!&ndash;<condition  test="%{QUERY:y}" pattern="2" flags="ornext"/>&ndash;&gt;
-            </rule>
-            <substitution uri="/">
-                <parameter key="x" value="5" />
-            </substitution>
-        </request-contexts:rewrite>-->
-
     </services:request-contexts>
 
     <!-- 将beans暴露给模板。这里定义的tools可被所有components之间共享。 -->
